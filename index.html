@@ -1,0 +1,143 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+<style>
+p {
+	margin: 0.5em;
+	padding: 0.5em;
+	border-radius: 0.2em;
+        transition: opacity 0.4s ease-out;
+	opacity: 0;
+	white-space: pre-wrap;
+	//font-size: large;
+	//font-family: 'Roboto', sans-serif;
+}
+
+p.show {
+	opacity: 1;
+}
+
+body {
+	height: 100vh;
+	margin: 0;
+	background-color: #FFFFFF;
+	display: flex;
+	flex-direction: column;
+}
+
+textarea {
+	padding: 1em;
+	border: none;
+	border-top: 1px solid black;
+	font-size: large;
+	font-family: 'Roboto', sans-serif;
+}
+
+#messagesPanel {
+	overflow-y: scroll;
+	font-size: large;
+	font-family: 'Roboto', sans-serif;
+	color: black;
+	flex: 1;
+}
+
+#statusBar {
+	background-color: yellow;
+	height: 2em;
+	font-size: large;
+	font-family: 'Roboto', sans-serif;
+	justify-content: center;
+	align-items: center;
+	display: flex;
+}
+</style>
+<script>
+var messagesPanel, typedMessage, first = true, ws, id;
+function main() {
+	messagesPanel = document.getElementById("messagesPanel");
+	typedMessage = document.getElementById("typedMessage");
+
+	typedMessage.onkeydown = function(e) {
+		if (e.keyCode === 13 && !e.shiftKey) {
+			if (typedMessage.value === "can i has new color?") {
+				id = Math.random();
+				document.cookie = 'id=' + id;
+			}
+			typedMessage.value = typedMessage.value.substring(0, 512);
+			addMessage(id, typedMessage.value, false);
+			ws.send(id + " " + typedMessage.value);
+			typedMessage.value = "";
+			return false;
+		}
+		return true;
+	};
+
+	typedMessage.onclick = function() {
+		if (first) {
+			typedMessage.value = "";
+			first = false;
+		}
+	}
+
+	var decodedCookie = decodeURIComponent(document.cookie);
+	if (decodedCookie) {
+		id = decodedCookie.substr(3);
+	} else {
+		id = Math.random();
+		document.cookie = 'id=' + id;
+	}
+
+	ws = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port);
+
+	ws.onmessage = function(e) {
+		var splitPos = e.data.indexOf(" ");
+		if (splitPos != -1) {
+			var incomingId = e.data.substr(0, splitPos);
+			if (typedMessage.disabled || incomingId != id) {
+				addMessage(incomingId, e.data.substr(splitPos), incomingId != id);
+			}
+		} else {
+			statusBar.textContent = e.data + ' user(s) online';
+			typedMessage.disabled = false;
+		}
+	};
+
+	ws.onclose = function() {
+		statusBar.textContent = 'Connection lost';
+		typedMessage.disabled = true;
+	};
+}
+
+function addMessage(id, message, left) {
+
+	/*message = message.replace(/&/g, 'OCH&amp;');
+	message = message.replace('/&/g', 'LESS&lt;');
+	message = message.replace('/&/g', 'GREATER&gt;');*/
+
+	var flexBox = document.createElement('div');
+	flexBox.style = 'display: flex; ' + (left ? '' : 'justify-content: flex-end');
+
+	var messageBox = document.createElement('p');
+	messageBox.style = "background-color: hsl(" + (Math.round(id * 16) / 16 * 360) + ", 100%, 50%); overflow: hidden; text-overflow: ellipsis;";
+
+	messageBox.textContent = message;
+	flexBox.appendChild(messageBox);
+	setTimeout(function() {
+		messageBox.className = "show";
+	}, 10);
+
+	var wereBottomScrolled = true;//messagesPanel.scrollTop == messagesPanel.scrollHeight;
+	messagesPanel.appendChild(flexBox);
+	if (wereBottomScrolled) {
+		messagesPanel.scrollTop = messagesPanel.scrollHeight;
+	}
+}
+</script>
+</head>
+	<body onload="main();">
+		<div id="statusBar">Connecting...</div>
+		<div id="messagesPanel"></div>
+		<textarea id="typedMessage" rows="5" disabled>Type your message here...</textarea>
+	</body>
+</html>
