@@ -1,7 +1,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
 p {
 	margin: 0.5em;
@@ -10,8 +11,6 @@ p {
         transition: opacity 0.4s ease-out;
 	opacity: 0;
 	white-space: pre-wrap;
-	//font-size: large;
-	//font-family: 'Roboto', sans-serif;
 }
 
 p.show {
@@ -24,28 +23,33 @@ body {
 	background-color: #FFFFFF;
 	display: flex;
 	flex-direction: column;
+	font-family: 'Roboto', sans-serif;
+	font-size: 16px;
 }
 
 textarea {
 	padding: 1em;
 	border: none;
+	outline: none;
 	border-top: 1px solid black;
-	font-size: large;
 	font-family: 'Roboto', sans-serif;
+	font-size: 1cm;
+	height: 5em;
+	min-height: 5em;
 }
 
 #messagesPanel {
+	border-top: 1px solid black;
 	overflow-y: scroll;
-	font-size: large;
-	font-family: 'Roboto', sans-serif;
 	color: black;
 	flex: 1;
 }
 
 #statusBar {
-	background-color: yellow;
+	background-color: white;
 	height: 2em;
-	font-size: large;
+	min-height: 2em;
+	font-size: 16px;
 	font-family: 'Roboto', sans-serif;
 	justify-content: center;
 	align-items: center;
@@ -61,8 +65,8 @@ function main() {
 	typedMessage.onkeydown = function(e) {
 		if (e.keyCode === 13 && !e.shiftKey) {
 			if (typedMessage.value === "can i has new color?") {
-				id = Math.random();
-				document.cookie = 'id=' + id;
+				id = Math.floor(Math.random() * 1000000);
+				localStorage.id = id;
 			}
 			typedMessage.value = typedMessage.value.substring(0, 512);
 			addMessage(id, typedMessage.value, false);
@@ -80,12 +84,11 @@ function main() {
 		}
 	}
 
-	var decodedCookie = decodeURIComponent(document.cookie);
-	if (decodedCookie) {
-		id = decodedCookie.substr(3);
+	if (localStorage.id) {
+		id = localStorage.id;
 	} else {
-		id = Math.random();
-		document.cookie = 'id=' + id;
+		id = Math.floor(Math.random() * 1000000);
+		localStorage.id = id;
 	}
 
 	ws = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port);
@@ -98,7 +101,7 @@ function main() {
 				addMessage(incomingId, e.data.substr(splitPos), incomingId != id);
 			}
 		} else {
-			statusBar.textContent = e.data + ' user(s) online';
+			statusBar.textContent = 'General demo chat built with µWebSockets. ' + e.data + ' user(s) online';
 			typedMessage.disabled = false;
 		}
 	};
@@ -110,16 +113,11 @@ function main() {
 }
 
 function addMessage(id, message, left) {
-
-	/*message = message.replace(/&/g, 'OCH&amp;');
-	message = message.replace('/&/g', 'LESS&lt;');
-	message = message.replace('/&/g', 'GREATER&gt;');*/
-
 	var flexBox = document.createElement('div');
 	flexBox.style = 'display: flex; ' + (left ? '' : 'justify-content: flex-end');
 
 	var messageBox = document.createElement('p');
-	messageBox.style = "background-color: hsl(" + (Math.round(id * 16) / 16 * 360) + ", 100%, 50%); overflow: hidden; text-overflow: ellipsis;";
+	messageBox.style = "background-color: hsl(" + (id / 16 * 360) + ", 100%, 50%); overflow: hidden; text-overflow: ellipsis;";
 
 	messageBox.textContent = message;
 	flexBox.appendChild(messageBox);
@@ -138,6 +136,6 @@ function addMessage(id, message, left) {
 	<body onload="main();">
 		<div id="statusBar">Connecting...</div>
 		<div id="messagesPanel"></div>
-		<textarea id="typedMessage" rows="5" disabled>Type your message here...</textarea>
+		<textarea id="typedMessage" disabled>Type your message here...</textarea>
 	</body>
 </html>

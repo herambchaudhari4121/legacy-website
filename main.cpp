@@ -40,7 +40,7 @@ int main() {
 
     h.onMessage([&h](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // cut messages to 512 maximum length
-        length = std::min<size_t>(512, length);
+        //length = std::min<size_t>(512, length);
 
         // add this message to the store, cut off old messages
         if (storedMessages.size() == 100) {
