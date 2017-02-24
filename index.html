@@ -94,15 +94,19 @@ function main() {
 	ws = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port);
 
 	ws.onmessage = function(e) {
-		var splitPos = e.data.indexOf(" ");
-		if (splitPos != -1) {
-			var incomingId = e.data.substr(0, splitPos);
-			if (typedMessage.disabled || incomingId != id) {
-				addMessage(incomingId, e.data.substr(splitPos), incomingId != id);
-			}
-		} else {
-			statusBar.textContent = 'General demo chat built with µWebSockets. ' + e.data + ' user(s) online';
+		if (e.data.charAt(0) == 'S') {
+			var info = e.data.split(" ");
+
+			statusBar.textContent = 'General demo chat built with µWebSockets. ' + info[1] + ' user(s) online, ' + parseInt(info[2] / 1024) + ' kb of user space memory.';
 			typedMessage.disabled = false;
+		} else {
+			var splitPos = e.data.indexOf(" ");
+			if (splitPos != -1) {
+				var incomingId = e.data.substr(0, splitPos);
+				if (typedMessage.disabled || incomingId != id) {
+					addMessage(incomingId, e.data.substr(splitPos), incomingId != id);
+				}
+			}
 		}
 	};
 

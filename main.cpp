@@ -7,10 +7,23 @@
 std::vector<std::string> storedMessages;
 std::vector<int> excludedMessages;
 std::stringstream indexHtml;
+std::string pidString;
 int connections = 0;
+char line[1024];
+
+int getKb() {
+    FILE *pipe = popen(("pmap " + pidString + " | tail -1").c_str(), "r");
+    fgets(line, sizeof(line), pipe);
+    pclose(pipe);
+    unsigned long kbUsage = atoi(strrchr(line, ' '));
+}
 
 int main() {
     uWS::Hub h;
+
+    pidString = std::to_string(::getpid());
+
+    std::cout << "pid: " << pidString << std::endl;
 
     indexHtml << std::ifstream ("index.html").rdbuf();
     if (!indexHtml.str().length()) {
@@ -34,27 +47,27 @@ int main() {
         ws.finalizeMessage(preparedMessageBatch);
 
         // broadcast number of clients connected to everyone
-        std::string tmp = std::to_string(++connections);
+        std::string tmp = "S " + std::to_string(++connections) + " " +  std::to_string(getKb());
         h.getDefaultGroup<uWS::SERVER>().broadcast(tmp.data(), tmp.length(), uWS::TEXT);
     });
 
     h.onMessage([&h](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
-        // cut messages to 512 maximum length
-        //length = std::min<size_t>(512, length);
+        if (length && data[0] != 'S' && length < 4096) {
+            // add this message to the store, cut off old messages
+            if (storedMessages.size() == 50) {
+                storedMessages.erase(storedMessages.begin());
+            }
+            storedMessages.push_back(std::string(data, length));
+            //std::cout << "Message posted: " << storedMessages.back() << std::endl;
 
-        // add this message to the store, cut off old messages
-        if (storedMessages.size() == 100) {
-            storedMessages.erase(storedMessages.begin());
+            // simply broadcast this message to everyone (completely without any timeout optimization!)
+            h.getDefaultGroup<uWS::SERVER>().broadcast(data, length, uWS::TEXT);
         }
-        storedMessages.push_back(std::string(data, length));
-
-        // simply broadcast this message to everyone (completely without any timeout optimization!)
-        h.getDefaultGroup<uWS::SERVER>().broadcast(data, length, uWS::TEXT);
     });
 
     h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, char *message, size_t length) {
         // broadcast number of clients connected to everyone
-        std::string tmp = std::to_string(--connections);
+        std::string tmp = "S " + std::to_string(--connections) + " " +  std::to_string(getKb());
         h.getDefaultGroup<uWS::SERVER>().broadcast(tmp.data(), tmp.length(), uWS::TEXT);
     });
 
