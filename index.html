@@ -58,19 +58,22 @@ textarea {
 </style>
 <script>
 var messagesPanel, typedMessage, first = true, ws, id;
+var messages = [];
 function main() {
 	messagesPanel = document.getElementById("messagesPanel");
 	typedMessage = document.getElementById("typedMessage");
 
 	typedMessage.onkeydown = function(e) {
 		if (e.keyCode === 13 && !e.shiftKey) {
-			if (typedMessage.value === "can i has new color?") {
-				id = Math.floor(Math.random() * 1000000);
-				localStorage.id = id;
+			if (typedMessage.value.length) {
+				if (typedMessage.value === "can i has new color?") {
+					id = Math.floor(Math.random() * 1000000);
+					localStorage.id = id;
+				}
+				typedMessage.value = typedMessage.value.substring(0, 512);
+				addMessage(id, typedMessage.value, false);
+				ws.send(id + " " + typedMessage.value);
 			}
-			typedMessage.value = typedMessage.value.substring(0, 512);
-			addMessage(id, typedMessage.value, false);
-			ws.send(id + " " + typedMessage.value);
 			typedMessage.value = "";
 			return false;
 		}
@@ -125,6 +128,10 @@ function addMessage(id, message, left) {
 
 	messageBox.textContent = message;
 	flexBox.appendChild(messageBox);
+	if (messages.length == 50) {
+		messagesPanel.removeChild(messages.shift());
+	}
+	messages.push(flexBox);
 	setTimeout(function() {
 		messageBox.className = "show";
 	}, 10);
