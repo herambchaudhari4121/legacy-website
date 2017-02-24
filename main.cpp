@@ -9,21 +9,27 @@ std::vector<int> excludedMessages;
 std::stringstream indexHtml;
 std::string pidString;
 int connections = 0;
-char line[1024];
 
 int getKb() {
-    FILE *pipe = popen(("pmap " + pidString + " | tail -1").c_str(), "r");
-    fgets(line, sizeof(line), pipe);
-    pclose(pipe);
-    unsigned long kbUsage = atoi(strrchr(line, ' '));
+    std::string line;
+    std::ifstream self("/proc/self/status");
+    int vmData, vmStk, vmPte;
+    while(!self.eof()) {
+        std::getline(self, line, ':');
+        if (line == "VmPTE") {
+            self >> vmPte;
+        } else if (line == "VmData") {
+            self >> vmData;
+        } else if (line == "VmStk") {
+            self >> vmStk;
+        }
+        std::getline(self, line);
+    }
+    return vmData - vmStk - vmPte;
 }
 
 int main() {
     uWS::Hub h;
-
-    pidString = std::to_string(::getpid());
-
-    std::cout << "pid: " << pidString << std::endl;
 
     indexHtml << std::ifstream ("index.html").rdbuf();
     if (!indexHtml.str().length()) {

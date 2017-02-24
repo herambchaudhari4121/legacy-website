@@ -97,7 +97,7 @@ function main() {
 		if (e.data.charAt(0) == 'S') {
 			var info = e.data.split(" ");
 
-			statusBar.textContent = 'General demo chat built with µWebSockets. ' + info[1] + ' user(s) online, ' + parseInt(info[2] / 1024) + ' kb of user space memory.';
+			statusBar.textContent = 'General demo chat built with µWebSockets. ' + info[1] + ' user(s) online, ' + info[2] + ' kb of user space memory.';
 			typedMessage.disabled = false;
 		} else {
 			var splitPos = e.data.indexOf(" ");
