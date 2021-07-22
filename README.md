@@ -466,12 +466,8 @@ Please see the above page for pointers to the archives.
 <P>
 Some now ancient discussion of the collector took place on the gcc
 java mailing list, whose archives appear
-<A HREF="http://gcc.gnu.org/ml/java/">here</a>, and also on
-<A HREF="http://lists.tunes.org/mailman/listinfo/gclist">gclist@iecc.com</a>.
-<P>
-Comments and bug reports may also be sent to
-(<A HREF="mailto:boehm@acm.org">boehm@acm.org</a>), but reporting issues on
-<A HREF="https://github.com/herambchaudhari4121/bdwgc/issues">github</a> is strongly preferred.
+
+
  
 </body>
 </html>
