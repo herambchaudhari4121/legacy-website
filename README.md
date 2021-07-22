@@ -471,7 +471,7 @@ java mailing list, whose archives appear
 <P>
 Comments and bug reports may also be sent to
 (<A HREF="mailto:boehm@acm.org">boehm@acm.org</a>), but reporting issues on
-<A HREF="https://github.com/ivmai/bdwgc/issues">github</a> is strongly preferred.
+<A HREF="https://github.com/herambchaudhari4121/bdwgc/issues">github</a> is strongly preferred.
  
 </body>
 </html>
